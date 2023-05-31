@@ -1,0 +1,28 @@
+---
+title: "Homework 05"
+author: "Adam Guerra"
+format: html
+editor: visual
+date: 05/30/2023
+toc: TRUE
+---
+
+```{r, include = FALSE, messgae = FALSE}
+#load in packages
+library(tidyverse)
+library(car)
+library(sqldf)
+library(janitor)
+library(ggthemes)
+library(naniar)
+library(performance)
+library(broom)
+library(ggeffects)
+library(flextable)
+library(naniar)
+library(corrplot)
+library(AICcmodavg)
+library(GGally)
+```
+
+## Introduction
