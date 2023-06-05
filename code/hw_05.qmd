@@ -4,7 +4,14 @@ author: "Adam Guerra"
 format: html
 editor: visual
 date: 05/30/2023
-toc: TRUE
+html: 
+  toc: TRUE
+  toc-location: left
+  code-fold: true
+  theme: sandstone
+execute: 
+  message: false
+  warning: false
 ---
 
 ```{r, include = FALSE, messgae = FALSE}
@@ -23,6 +30,66 @@ library(naniar)
 library(corrplot)
 library(AICcmodavg)
 library(GGally)
+library(here)
+
+#load in data
+plant <- read_csv(here("data/sarracenia.csv")) |> 
+        clean_names()
+
+#subset desired columns
+plant_clean <- plant |> 
+               select(totmass, species, feedlevel, sla, 
+                      chlorophyll, amass, num_lvs, num_phylls)
 ```
 
 ## Introduction
+
+Sarracenia is a genus of carnivorous plants typically found on the eastern seaboard of the United States. Within our data there are ten different species.
+
+## Methods
+
+#### Protocols
+
+"Two plants of each Sarracenia species were assigned to one of six feeding levels in a regression design ranging from 0 - 0.25g of finely ground wasps per feeding (for small species), 0 - 0.5g (for species of intermediate sizes), and 0 - 1.0g (for large species); N equals120 plants total. Aboveground size and Amass were measured prior to commencing treatments. Plants were fed once/week for 7 weeks." (Ellison).
+
+#### Organization
+
+The data is organized into columns that are characteristics, with each row being a an individual plant with its corresponding observations. There are 120 records and 32 variables in CSV format. 11 of the columns were calculated, while the other 21 were measurements.
+
+#### Missing Data
+
+```{r}
+#visualize missing observations
+gg_miss_var(plant_clean) +
+  labs(title = "Missing Values in the Dataset", 
+       caption = "Figure 1: There are a high number of mising values in the chlorophyll content and mass-based light-saturated 
+       photosyntehtic rate of youngest leaf columns. There are also quite a few values missing from the specific 
+       leaf area of the youngest fulley expanded leaf column.") +
+  theme_bw() +
+  theme(plot.caption = element_text(hjust = 0),
+        plot.caption.position = "plot")
+```
+
+If chlorophyll content is missing, the amass column likely cannot be calculated. This could be the reason that each of those columns have the same number of missing N/A. Although it could also be that those specific plants did not meet the requirements to take the measurement in other categories as well within the full data set.
+
+#### Subset NAs
+
+```{r}
+#drop NAs
+plant_sub <- plant_clean |> 
+             drop_na(sla, chlorophyll, num_phylls, amass, num_lvs)
+```
+
+#### Correlation
+
+```{r}
+#calculate phearsons
+plant_corr <- plant_sub |> 
+              select(1,3:8) |> 
+              cor(method = "pearson")
+
+#visualize pearsons correlation 
+corrplot(plant_corr, method = "color", addCoef.col = "black")
+```
+
+## Results
