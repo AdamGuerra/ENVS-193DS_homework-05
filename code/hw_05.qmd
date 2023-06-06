@@ -61,14 +61,13 @@ The data is organized into columns that are characteristics, with each row being
 ```{r}
 #visualize missing observations
 gg_miss_var(plant_clean) +
-  labs(title = "Missing Values in the Dataset", 
-       caption = "Figure 1: There are a high number of mising values in the chlorophyll content and mass-based light-saturated 
-       photosyntehtic rate of youngest leaf columns. There are also quite a few values missing from the specific 
-       leaf area of the youngest fulley expanded leaf column.") +
+  labs(title = "Missing Values in the Dataset") +
   theme_bw() +
   theme(plot.caption = element_text(hjust = 0),
         plot.caption.position = "plot")
 ```
+
+###### Figure 1: There are a high number of mising values in the chlorophyll content and mass-based light-saturated photosyntehtic rate of youngest leaf columns. There are also quite a few values missing from the specific leaf area of the youngest fulley expanded leaf column.
 
 If chlorophyll content is missing, the amass column likely cannot be calculated. This could be the reason that each of those columns have the same number of missing N/A. Although it could also be that those specific plants did not meet the requirements to take the measurement in other categories as well within the full data set.
 
@@ -85,11 +84,35 @@ plant_sub <- plant_clean |>
 ```{r}
 #calculate phearsons
 plant_corr <- plant_sub |> 
-              select(1,3:8) |> 
+              select(3:8) |> 
               cor(method = "pearson")
 
 #visualize pearsons correlation 
-corrplot(plant_corr, method = "color", addCoef.col = "black")
+corrplot(plant_corr, method = "ellipse", addCoef.col = "black")
+```
+
+###### Figure 2: This graph shows the correlations between the different variables that we are interested in using as predictors for total mass. For our data set the highest correlation is 0.32 and the lowest is 0. 
+
+In this situation, I believe that it is safe to assume there is no colinearity between the variables. Although I will continue to monitor how the higher correlated variables affect different models as I run the regressions.
+
+#### Relationships Between Variables
+
+```{r, message = FALSE}
+#create visualization of relationships
+plant_sub |> 
+  select(2:8) |> 
+  ggpairs()
+```
+
+###### Figure 3: Shows figures of each variable plotted against one another to visualize relationships. Also contains correlation coefficients that are shown in figure 2.
+
+Based on the results from figure 3, there do not appear to be any strong relationships between the possible predictor variables. There would be a clear positive or negative trend with points forming a line if there was strong correlation.
+
+#### Create Null and Full Model
+
+```{r}
+#create null model
+
 ```
 
 ## Results
