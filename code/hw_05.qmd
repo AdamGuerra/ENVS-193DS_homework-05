@@ -1,17 +1,20 @@
 ---
 title: "Homework 05"
 author: "Adam Guerra"
-format: html
 editor: visual
 date: 05/30/2023
-html: 
-  toc: TRUE
-  toc-location: left
-  code-fold: true
-  theme: sandstone
+format: 
+  html: 
+    toc: TRUE
+    toc-depth: 4
+    toc-location: left
+    toc-float: TRUE
+    toc-collapsed: TRUE
+    code-fold: TRUE
+    theme: sandstone
 execute: 
-  message: false
-  warning: false
+  message: FALSE
+  warning: FALSE
 ---
 
 ```{r, include = FALSE, messgae = FALSE}
@@ -31,6 +34,7 @@ library(corrplot)
 library(AICcmodavg)
 library(GGally)
 library(here)
+library(MuMIn)
 
 #load in data
 plant <- read_csv(here("data/sarracenia.csv")) |> 
@@ -44,7 +48,11 @@ plant_clean <- plant |>
 
 ## Introduction
 
-Sarracenia is a genus of carnivorous plants typically found on the eastern seaboard of the United States. Within our data there are ten different species.
+Sarracenia is a genus of carnivorous plants commonly known as pitcher plants, are carnivorous plants renowned for their unique morphology and ecological role. Like any plant, they contribute to the biodiversity and contribute to keeping ecosystems at equilibrium. Predicting the biomass of Sarracenia plants can provide valuable insights for optimizing cultivation practices, conservation efforts, and understanding nutrient cycling in wetland environments (Ellison 2001).
+
+This analysis aims to explore the relationship between several predictors and the total biomass of Sarracenia plants. The examined predictors include the amount of feed, species type, surface area of the youngest leaf, the number of pitchers, the number of phyllodes, and the chlorophyll content. Understanding the factors that contribute to biomass can aid in predicting plant growth and productivity, which is vital for horticulturists and conservationists to optimize resource allocation and make informed decisions regarding cultivation practices. This is especially important for species like the Rubra which is federally endangered (Jo 1998). However, it is important to recognize that this analysis will not look at all possible variables that influence biomass. There have been studies showing that plants can be limited by nitrogen and environmental stress (Bott 2008).
+
+I am testing the hypothesis that the aforementioned potential variables will create a model that significantly predicts the total biomass of a given plant, and am ultimately trying to answer the questions: Can I accurately predict the total biomass of a sarracenia plant? Which variables will be the most significant predictors?
 
 ## Methods
 
@@ -177,7 +185,7 @@ check_normality(model2_log)
 check_heteroscedasticity(model2_log)
 ```
 
-For the second model I chose to look at species and specific area of the youngest leaf of the plant. All assumptions were passed.
+For the second model I chose to look at species and specific area of the youngest leaf of the plant. I think that leaf size may be species specific and that the leaf size for the youngest leaf will be a good indicator of overall mass. All assumptions were passed.
 
 ```{r}
 #creating model 3
@@ -191,7 +199,7 @@ check_normality(model3_log)
 check_heteroscedasticity(model3_log)
 ```
 
-For the third model I decided to look at the grams of ground hymenoptera given to each plant, the number of phyllodes/pitchers produced by each plant, and the mass-based light-saturated photosynthetic rate of youngest leaf. All assumptions were passed.
+For the third model I decided to look at the grams of ground hymenoptera given to each plant, the number of phyllodes/pitchers produced by each plant, and the mass-based light-saturated photosynthetic rate of youngest leaf. I chose these because they are the more specific measurement observations. All assumptions were passed.
 
 ```{r}
 #creating model 4
@@ -205,6 +213,62 @@ check_normality(model4_log)
 check_heteroscedasticity(model4_log)
 ```
 
-For the fourth and final model, I looked at just species and the grams of ground hymenoptera given to each plant. All assumptions were passed.
+For the fourth and final model, I looked at just species and the grams of ground hymenoptera given to each plant. This is to test if the simplest predictors will work well. All assumptions were passed.
+
+#### Model Comparison
+
+```{r}
+#compare models using AIC
+MuMIn::AICc(full_log, model2_log, model3_log, model4_log, null_log)
+```
 
 ## Results
+
+#### Chosen Model and Summary
+
+I found that the full model that used sla, feedlevel, species, chlorophyll, amass, num_lvs, and num_phylls predictors best predicted total mass (model summary).
+
+```{r}
+#show best model
+summary(full_log)
+```
+
+```{r}
+#make table
+table <- tidy(full_log, conf.int = TRUE) |> 
+         mutate_if(is.numeric, round, 3) |> 
+         flextable() |>
+         autofit()
+
+table
+```
+
+#### Interpretation of Model
+
+This model used a total of seven predictors: mass-based light-saturated photosynthetic rate of the youngest leaf, specific leaf area of the youngest fully-expanded leaf, total number of pitchers and phyllodes produced, chlorophyll a + b content of youngest fully-expanded leaf, and the grams of ground hymenoptera fed per week to each plant. It has 87 degrees of freedom, a test statistic of 38.38, and a p-value less than 2e-16. Using all of these factors, this model is able to account for 84.6% of the variance in the total mass.
+
+#### Prediction
+
+```{r, message = FALSE, warning = FALSE}
+#make prediction model
+model_pred <- ggpredict(full_log, terms = "species", back.transform = TRUE)
+
+#plot prediction model
+plot(model_pred, add.data = TRUE)
+```
+
+###### Figure 4: Shows the predicted values for biomass based on species. The plant with the highest predicted biomass was leucophylla and lowest for psittacina. 
+
+#### Discussion
+
+Our model showed that certain species of sarracenia are better predictors than others, specifically alata, flava, leucophylla, psittacina, rosea, and rubra. The number of pitchers/phyllodes and chlorophyll were the other two predictors that were most significant in the model. Predicting total mass of a sarracenia plant requires many different variables to create an accurate prediction similar to the full model.
+
+## Bibliography
+
+-   Bott, Terry, et al. \"Nutrient Limitation and Morphological Plasticity of the Carnivorous Pitcher Plant            *Sarracenia Purpurea*            in Contrasting Wetland Environments.\" *New Phytologist*, vol. 180, no. 3, 2008, pp. 631--641, https://doi.org/10.1111/j.1469-8137.2008.02575.x. 
+
+-   Ellison, A. and E. Farnsworth. 2021. Effects of Prey Availability on Sarracenia Physiology at Harvard Forest 2005 ver 18. Environmental Data Initiative. https://doi.org/10.6073/pasta/26b22d09279e62fd729ffc35f9ef0174 (Accessed 2023-06-01).
+
+-   Ellison, Aaron M., and Nicholas J. Gotelli. \"Evolutionary Ecology of Carnivorous Plants.\" *Trends in Ecology & Evolution*, vol. 16, no. 11, 2001, pp. 623--629, https://doi.org/10.1016/s0169-5347(01)02269-8. 
+
+-   Jo, Mary, et al. \"Allozyme Diversity in the Endangered Pitcher Plant *Sarracenia Rubra* Ssp.. *Alabamensis*(Sarraceniaceae) and Its Close Relative *S. Rubra* Ssp.. *Rubra*.\" *American Journal of Botany*, vol. 85, no. 6, 1998, pp. 802--810, https://doi.org/10.2307/2446415. 
