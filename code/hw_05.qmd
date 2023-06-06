@@ -112,7 +112,99 @@ Based on the results from figure 3, there do not appear to be any strong relatio
 
 ```{r}
 #create null model
+null <- lm(totmass ~ 1, data = plant_sub)
+
+#create full model
+full <- lm(totmass ~ species + feedlevel + sla + chlorophyll + 
+             amass + num_lvs + num_phylls, data = plant_sub)
+```
+
+The null model in this and all cases is the response variable against a one slope line. For our full model we will be looking at all the possible predictor variables combined into one model. This may seem like the best model now; however, it is also the most complex.
+
+#### Diagnostics
+
+```{r}
+#full model diagnostics 
+par(mfrow = c(2,2))
+plot(full)
+
+#check normality
+check_normality(full)
+
+#check variability
+check_heteroscedasticity(full)
 
 ```
+
+Created standard plots for checking assumptions as well as using Shapiro-Wilks and Breusch-Pagen tests. After visually and statistically checking the assumptions, the full model did not meet all assumptions.
+
+```{r}
+#perform log transformation
+null_log <- lm(log(totmass) ~ 1, data = plant_sub)
+full_log <- lm(log(totmass) ~ species + feedlevel + sla + chlorophyll + 
+             amass + num_lvs + num_phylls, data = plant_sub)
+
+#check assumptions of transformed full model
+par(mfrow = c(2,2))
+plot(full_log)
+
+check_normality(full_log)
+check_heteroscedasticity(full_log)
+```
+
+After performing the log transformation, I generated the standard plots to visually check assumptions for the new transformed model. Then I ran the same statistical tests used on the transformed model, which this new version passed.
+
+#### Evaluate Multicollinearity
+
+```{r}
+#run VIF
+car::vif(full_log)
+```
+
+Using generalized variance inflation factor, I determined that none of the variables displayed concern for collinearity.
+
+#### Creation of Alternate Models
+
+```{r}
+#creating model 2
+model2_log <- lm(log(totmass) ~ species + sla, data = plant_sub)
+
+#check assumptions for model 2
+par(mfrow = c(2,2))
+plot(model2_log)
+
+check_normality(model2_log)
+check_heteroscedasticity(model2_log)
+```
+
+For the second model I chose to look at species and specific area of the youngest leaf of the plant. All assumptions were passed.
+
+```{r}
+#creating model 3
+model3_log <- lm(log(totmass) ~ num_lvs + feedlevel + amass, data = plant_sub)
+
+#check assumptions for model 3
+par(mfrow = c(2,2))
+plot(model3_log)
+
+check_normality(model3_log)
+check_heteroscedasticity(model3_log)
+```
+
+For the third model I decided to look at the grams of ground hymenoptera given to each plant, the number of phyllodes/pitchers produced by each plant, and the mass-based light-saturated photosynthetic rate of youngest leaf. All assumptions were passed.
+
+```{r}
+#creating model 4
+model4_log <- lm(log(totmass) ~ species + feedlevel, data = plant_sub)
+
+#check assumptions for model 4
+par(mfrow = c(2,2))
+plot(model4_log)
+
+check_normality(model4_log)
+check_heteroscedasticity(model4_log)
+```
+
+For the fourth and final model, I looked at just species and the grams of ground hymenoptera given to each plant. All assumptions were passed.
 
 ## Results
