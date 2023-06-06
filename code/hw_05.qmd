@@ -43,7 +43,7 @@ plant <- read_csv(here("data/sarracenia.csv")) |>
 #subset desired columns
 plant_clean <- plant |> 
                select(totmass, species, feedlevel, sla, 
-                      chlorophyll, amass, num_lvs, num_phylls)
+                      chlorophyll, amass, num_lvs, num_phylls) #select columns of interest
 ```
 
 ## Introduction
@@ -69,10 +69,8 @@ The data is organized into columns that are characteristics, with each row being
 ```{r}
 #visualize missing observations
 gg_miss_var(plant_clean) +
-  labs(title = "Missing Values in the Dataset") +
-  theme_bw() +
-  theme(plot.caption = element_text(hjust = 0),
-        plot.caption.position = "plot")
+  labs(title = "Missing Values in the Dataset") + #label title
+  theme_bw() #set theme
 ```
 
 ###### Figure 1: There are a high number of mising values in the chlorophyll content and mass-based light-saturated photosyntehtic rate of youngest leaf columns. There are also quite a few values missing from the specific leaf area of the youngest fulley expanded leaf column.
@@ -83,8 +81,8 @@ If chlorophyll content is missing, the amass column likely cannot be calculated.
 
 ```{r}
 #drop NAs
-plant_sub <- plant_clean |> 
-             drop_na(sla, chlorophyll, num_phylls, amass, num_lvs)
+plant_sub <- plant_clean |> #subset clean data
+             drop_na(sla, chlorophyll, num_phylls, amass, num_lvs) #drop na values
 ```
 
 #### Correlation
@@ -92,8 +90,8 @@ plant_sub <- plant_clean |>
 ```{r}
 #calculate phearsons
 plant_corr <- plant_sub |> 
-              select(3:8) |> 
-              cor(method = "pearson")
+              select(3:8) |> #select numeric predictor variables
+              cor(method = "pearson") #set method
 
 #visualize pearsons correlation 
 corrplot(plant_corr, method = "ellipse", addCoef.col = "black")
@@ -108,8 +106,8 @@ In this situation, I believe that it is safe to assume there is no colinearity b
 ```{r, message = FALSE}
 #create visualization of relationships
 plant_sub |> 
-  select(2:8) |> 
-  ggpairs()
+  select(2:8) |> #select predictors
+  ggpairs() #build scatter plot matrix
 ```
 
 ###### Figure 3: Shows figures of each variable plotted against one another to visualize relationships. Also contains correlation coefficients that are shown in figure 2.
@@ -131,7 +129,7 @@ The null model in this and all cases is the response variable against a one slop
 
 #### Diagnostics
 
-```{r}
+```{r,}
 #full model diagnostics 
 par(mfrow = c(2,2))
 plot(full)
@@ -235,10 +233,10 @@ summary(full_log)
 
 ```{r}
 #make table
-table <- tidy(full_log, conf.int = TRUE) |> 
-         mutate_if(is.numeric, round, 3) |> 
-         flextable() |>
-         autofit()
+table <- tidy(full_log, conf.int = TRUE) |> #create table
+         mutate_if(is.numeric, round, 3) |> #change length of values
+         flextable() |> #create flex table
+         autofit() #auto format table
 
 table
 ```
@@ -272,3 +270,7 @@ Our model showed that certain species of sarracenia are better predictors than o
 -   Ellison, Aaron M., and Nicholas J. Gotelli. \"Evolutionary Ecology of Carnivorous Plants.\" *Trends in Ecology & Evolution*, vol. 16, no. 11, 2001, pp. 623--629, https://doi.org/10.1016/s0169-5347(01)02269-8. 
 
 -   Jo, Mary, et al. \"Allozyme Diversity in the Endangered Pitcher Plant *Sarracenia Rubra* Ssp.. *Alabamensis*(Sarraceniaceae) and Its Close Relative *S. Rubra* Ssp.. *Rubra*.\" *American Journal of Botany*, vol. 85, no. 6, 1998, pp. 802--810, https://doi.org/10.2307/2446415. 
+
+## Links
+
+[Repository](https://github.com/AdamGuerra/ENVS-193DS_homework-05)
